@@ -1,0 +1,119 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        mavenLocal()
+        maven {
+            url "https://repo1.maven.org/maven2/"
+            metadataSources {
+                mavenPom()
+                artifact()
+            }
+        }
+    }
+    dependencies {
+        classpath 'org.springframework.boot:spring-boot-gradle-plugin:3.1.2'
+        classpath 'org.openapitools:openapi-generator-gradle-plugin:6.6.0'
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'org.openapi.generator'
+
+group = 'com.ai.codegeneration.sig.example'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    //spring boot starter dependencies
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-parent:3.1.2'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    //javax servlet
+    implementation 'javax.servlet:javax.servlet-api:4.0.1'
+
+    //openapi generator dependencies
+    implementation 'org.openapitools:openapi-generator-core:6.6.0'
+    implementation('org.openapitools:jackson-databind-nullable:0.2.1')
+
+    //swagger dependencies
+    implementation 'io.swagger:swagger-annotations:1.6.11'
+
+    //javax validation
+    implementation 'javax.validation:validation-api:2.0.1.Final'
+
+    //javax annotation
+    implementation 'javax.annotation:javax.annotation-api:1.3.2'
+
+    //springdoc webmvc ui starter dependency
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
+
+    //h2 database
+    implementation 'com.h2database:h2:1.4.200'
+
+    //lombok
+    implementation 'org.projectlombok:lombok:1.18.20'
+    annotationProcessor 'org.projectlombok:lombok:1.18.20'
+
+    testImplementation platform('org.junit:junit-bom:5.9.1')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+//source sets
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java', 'build/generated/src/main/java']
+        }
+    }
+    test {
+        java {
+            srcDirs = ['src/test/java', 'build/generated/src/test/java']
+        }
+    }
+}
+
+//openapi generator configuration
+task generateServer(type: org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
+    generatorName = "spring"
+    inputSpec = "$rootDir/src/main/resources/openapi.yaml".toString()
+    skipValidateSpec = true
+    outputDir = "$buildDir/generated".toString()
+    apiPackage = "com.ai.codegeneration.sig.example.generated.api"
+    modelPackage = "com.ai.codegeneration.sig.example.generated.model"
+    configOptions = [
+            dateLibrary    : "java8",
+            delegatePattern: "true",
+            useTags        : "true"
+    ]
+    globalProperties = [
+            "modelDocs": "true",
+            "apiDocs": "true"
+    ]
+}
+
+//spring boot configuration
+springBoot
+{
+    mainClass = 'com.ai.codegeneration.sig.example.CheckoutApplication'
+}
+
+bootJar {
+    enabled = true
+    mainClass = 'com.ai.codegeneration.sig.example.CheckoutApplication'
+}
+
+compileJava.dependsOn generateServer

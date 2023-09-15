@@ -1,0 +1,233 @@
+---
+openapi: "3.0.3"
+info:
+  title: My API
+  description: 'My API description'
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Local server
+tags:
+  - name: 'Cards'
+    description: 'Card operations'
+  - name: 'Transactions'
+    description: 'Transaction operations'
+paths:
+  /cards:
+    post:
+      tags:
+        - 'Cards'
+      summary: 'Save a card'
+      description: 'Save a card to the database'
+      operationId: 'saveCard'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Card'
+      responses:
+        default:
+          description: 'Unexpected error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Card'
+        '200':
+          description: 'Card saved'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Card'
+
+  #get a card by id from the database
+  /cards/{cardId}:
+    get:
+      tags:
+        - 'Cards'
+      summary: 'Get a card by id'
+      description: 'Get a card by id from the database'
+      operationId: 'getCardById'
+      parameters:
+        - name: 'cardId'
+          in: 'path'
+          description: 'Id of the card'
+          required: true
+          schema:
+            type: 'integer'
+      responses:
+        default:
+          description: 'Unexpected error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Card'
+        '200':
+          description: 'Card found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Card'
+        '404':
+          description: 'Card not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /transactions:
+    post:
+      tags:
+        - 'Transactions'
+      summary: 'Checkout with a card'
+      description: 'Checkout with a card'
+      operationId: 'checkout'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+      responses:
+        default:
+          description: 'Unexpected error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+        '200':
+          description: 'Card checked out'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+        '404':
+          description: 'Card not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags:
+        - 'Transactions'
+      summary: 'Get all transactions for a card'
+      description: 'Get all transactions for a card'
+      operationId: 'getAllTransactions'
+      parameters:
+        - name: 'cardId'
+          in: 'query'
+          description: 'Id of the card'
+          required: true
+          schema:
+            type: 'integer'
+      responses:
+        default:
+          description: 'Unexpected error'
+          content:
+            application/json:
+              #return array of Transaction objects
+              schema:
+                type: 'array'
+                items:
+                  $ref: '#/components/schemas/Transaction'
+        '200':
+          description: 'Transactions found'
+          content:
+            application/json:
+              schema:
+                type: 'array'
+                items:
+                  $ref: '#/components/schemas/Transaction'
+        '404':
+          description: 'Card not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    #get a transaction by id from the database
+  /transactions/{transactionId}:
+    get:
+      tags:
+        - 'Transactions'
+      summary: 'Get a transaction by id'
+      description: 'Get a transaction by id from the database'
+      operationId: 'getTransactionById'
+      parameters:
+        - name: 'transactionId'
+          in: 'path'
+          description: 'Id of the transaction'
+          required: true
+          schema:
+            type: 'integer'
+      responses:
+        default:
+          description: 'Unexpected error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+        '200':
+          description: 'Transaction found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+        '404':
+          description: 'Transaction not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    Card:
+      type: object
+      properties:
+        cardId:
+          type: integer
+          example: 1
+        firstName:
+          type: string
+          example: John
+        lastName:
+          type: string
+          example: Doe
+        cardNumber:
+          type: string
+          example: 1234567890123456
+        expirationMonth:
+          type: string
+          example: 12
+        expirationYear:
+          type: string
+          example: 2021
+    Transaction:
+      type: object
+      properties:
+        transactionId:
+          type: integer
+          example: 1
+        amount:
+          type: number
+          example: 100.00
+        currency:
+          type: string
+          example: USD
+        cardId:
+          type: integer
+          example: 1
+        transactionDate:
+          type: string
+          example: 2021-01-01
+    Error:
+        type: object
+        properties:
+          code:
+            type: integer
+          message:
+            type: string
+            example: Error message
+          description:
+            type: string
+            example: Error description
